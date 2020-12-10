@@ -26,9 +26,11 @@ if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/
   echo
 fi
 
+sed -i 's/**DOAMIN**/$domain/g' $data_path/nginx/app.conf
+
 echo "### Creating dummy certificate for $domain ..."
 path="/etc/letsencrypt/live/$domain"
-mkdir "$data_path/conf/live/$domain"
+mkdir -p "$data_path/conf/live/$domain"
 docker-compose run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1\
     -keyout '$path/privkey.pem' \
