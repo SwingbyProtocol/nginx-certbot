@@ -8,8 +8,11 @@ fi
 domain=$DOMAIN
 rsa_key_size=4096
 data_path="./data/certbot"
+nginx_config_path="./data/nginx/app.conf"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
+
+sed -i 's/**DOMAIN**/$domain/g' $nginx_config_path
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domain. Continue and replace existing certificate? (y/N) " decision
@@ -26,7 +29,6 @@ if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/
   echo
 fi
 
-sed -i 's/**DOAMIN**/$domain/g' $data_path/nginx/app.conf
 
 echo "### Creating dummy certificate for $domain ..."
 path="/etc/letsencrypt/live/$domain"
