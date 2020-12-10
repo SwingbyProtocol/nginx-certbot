@@ -6,13 +6,15 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 domain=$DOMAIN
+port=$PORT
 rsa_key_size=4096
 data_path="./data/certbot"
 nginx_config_path="./data/nginx/app.conf"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
-sed -i 's/**DOMAIN**/$domain/g' $nginx_config_path
+sed -i "s/[DOMAIN]/$domain/g" $nginx_config_path
+sed -i "s/[PORT]/$port/g" $nginx_config_path
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domain. Continue and replace existing certificate? (y/N) " decision
@@ -28,7 +30,6 @@ if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/
   curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem >"$data_path/conf/ssl-dhparams.pem"
   echo
 fi
-
 
 echo "### Creating dummy certificate for $domain ..."
 path="/etc/letsencrypt/live/$domain"
