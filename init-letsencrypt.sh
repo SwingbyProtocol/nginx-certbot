@@ -9,12 +9,13 @@ domain=$DOMAIN
 port=$PORT
 rsa_key_size=4096
 data_path="./data/certbot"
-nginx_config_path="./data/nginx/app.conf"
+nginx_config_path="./data/nginx"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
-sed -i "s/_DOMAIN_/$domain/g" $nginx_config_path
-sed -i "s/_PORT_/$port/g" $nginx_config_path
+cp "$nginx_config_path/app.template.conf" "$nginx_config_path/app.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app.conf"
+sed -i "s/_PORT_/$port/g" "$nginx_config_path/app.conf"
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domain. Continue and replace existing certificate? (y/N) " decision
