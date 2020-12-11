@@ -6,7 +6,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 mydomain=$DOMAIN
-domains="($mydomain btc-indexer-$mydomain eth-indexer-$mydomain)"
+domains=("$mydomain btc-indexer-$mydomain eth-indexer-$mydomain")
 
 port=$PORT
 rsa_key_size=4096
@@ -61,6 +61,11 @@ docker-compose run --rm --entrypoint "\
 echo
 
 echo "### Requesting Let's Encrypt certificate for $domains ..."
+#Join $domains to -d args
+domain_args=""
+for domain in "${domains[@]}"; do
+  domain_args="$domain_args -d $domain"
+done
 
 # Select appropriate email arg
 case "$email" in
@@ -68,10 +73,6 @@ case "$email" in
 *) email_arg="--email $email" ;;
 esac
 
-domain_args=""
-for domain in "${domains[@]}"; do
-  domain_args="$domain_args -d $domain"
-done
 
 # Enable staging mode if needed
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
