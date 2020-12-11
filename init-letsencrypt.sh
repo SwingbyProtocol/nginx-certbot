@@ -6,7 +6,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 mydomain=$DOMAIN
-domains=("$mydomain btc-indexer-$mydomain eth-indexer-$mydomain")
+domains=($mydomain btc-indexer-$mydomain eth-indexer-$mydomain)
 
 port=$PORT
 rsa_key_size=4096
@@ -15,13 +15,13 @@ nginx_config_path="./data/nginx"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
-mkdir -p "$nginx_config_path/sites-available"
-mkdir -p "$nginx_config_path/sites-enabled"
+#mkdir -p "$nginx_config_path/sites-available"
+mkdir -p "$nginx_config_path/app"
 for domain in "${domains[@]}"; do
-  cp "$nginx_config_path/app.template.conf" "$nginx_config_path/sites-available/$domain.conf"
-  sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/sites-available/$domain.conf"
-  sed -i "s/_PORT_/$port/g" "$nginx_config_path/sites-available/$domain.conf"
-  ln -s $domain.conf $nginx_config_path/sites-available/$domain.conf
+  cp "$nginx_config_path/app.template.conf" "$nginx_config_path/app/$domain.conf"
+  sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$domain.conf"
+  sed -i "s/_PORT_/$port/g" "$nginx_config_path/app/$domain.conf"
+  #ln -s $domain.conf $nginx_config_path/sites-available/$domain.conf
 done
 
 if [ -d "$data_path" ]; then
@@ -39,26 +39,30 @@ if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/
   echo
 fi
 
-echo "### Creating dummy certificate for $domains ..."
-path="/etc/letsencrypt/live/$domains"
-mkdir -p "$data_path/conf/live/$domains"
-docker-compose run --rm --entrypoint "\
+for domain in "${domains[@]}"; do
+  echo "### Creating dummy certificate for $domain ..."
+  path="/etc/letsencrypt/live/$domain"
+  mkdir -p "$data_path/conf/live/$domain"
+  docker-compose run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1\
     -keyout '$path/privkey.pem' \
     -out '$path/fullchain.pem' \
     -subj '/CN=localhost'" certbot
+done
 echo
 
 echo "### Starting nginx ..."
 docker-compose up --force-recreate -d nginx
 echo
 
-echo "### Deleting dummy certificate for $domains ..."
-docker-compose run --rm --entrypoint "\
-  rm -Rf /etc/letsencrypt/live/$domains && \
-  rm -Rf /etc/letsencrypt/archive/$domains && \
-  rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
-echo
+for domain in "${domains[@]}"; do
+  echo "### Deleting dummy certificate for $domain ..."
+  docker-compose run --rm --entrypoint "\
+  rm -Rf /etc/letsencrypt/live/$domain && \
+  rm -Rf /etc/letsencrypt/archive/$domain && \
+  rm -Rf /etc/letsencrypt/renewal/$domain.conf" certbot
+  echo
+done
 
 echo "### Requesting Let's Encrypt certificate for $domains ..."
 #Join $domains to -d args
@@ -66,13 +70,12 @@ domain_args=""
 for domain in "${domains[@]}"; do
   domain_args="$domain_args -d $domain"
 done
-
+print
 # Select appropriate email arg
 case "$email" in
 "") email_arg="--register-unsafely-without-email" ;;
 *) email_arg="--email $email" ;;
 esac
-
 
 # Enable staging mode if needed
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
