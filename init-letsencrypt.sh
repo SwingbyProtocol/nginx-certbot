@@ -8,21 +8,27 @@ fi
 mydomain=$DOMAIN
 domains=($mydomain btc-indexer-$mydomain eth-indexer-$mydomain)
 
-port=$PORT
+http_port=$PORT
+ws_port=$WS_PORT
 rsa_key_size=4096
 data_path="./data/certbot"
 nginx_config_path="./data/nginx"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
-#mkdir -p "$nginx_config_path/sites-available"
 mkdir -p "$nginx_config_path/app"
-for domain in "${domains[@]}"; do
-  cp "$nginx_config_path/app.template.conf" "$nginx_config_path/app/$domain.conf"
-  sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$domain.conf"
-  sed -i "s/_PORT_/$port/g" "$nginx_config_path/app/$domain.conf"
-  #ln -s $domain.conf $nginx_config_path/sites-available/$domain.conf
-done
+
+cp "$nginx_config_path/http.conf" "$nginx_config_path/app/${domains[0]}.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/${domains[0]}.conf"
+sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/${domains[0]}.conf"
+
+cp "$nginx_config_path/http.conf" "$nginx_config_path/app/${domains[1]}.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/${domains[1]}.conf"
+sed -i "s/_WS_PORT_/$ws_port/g" "$nginx_config_path/app/${domains[1]}.conf"
+
+cp "$nginx_config_path/http.conf" "$nginx_config_path/app/${domains[2]}.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/${domains[2]}.conf"
+sed -i "s/_WS_PORT_/$ws_port/g" "$nginx_config_path/app/${domains[2]}.conf"
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
@@ -70,7 +76,7 @@ domain_args=""
 for domain in "${domains[@]}"; do
   domain_args="$domain_args -d $domain"
 done
-print
+
 # Select appropriate email arg
 case "$email" in
 "") email_arg="--register-unsafely-without-email" ;;
@@ -80,15 +86,17 @@ esac
 # Enable staging mode if needed
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
-docker-compose run --rm --entrypoint "\
+for domain in "${domains[@]}"; do
+  docker-compose run --rm --entrypoint "\
   certbot certonly --webroot -w /var/www/certbot \
     $staging_arg \
     $email_arg \
-    $domain_args \
+    -d $domain \
     --rsa-key-size $rsa_key_size \
     --agree-tos \
     --force-renewal" certbot
-echo
+  echo
+done
 
 echo "### Reloading nginx ..."
 docker-compose exec nginx nginx -s reload
