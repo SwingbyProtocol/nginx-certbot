@@ -5,10 +5,8 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domain=$DOMAIN
-btc_indexer_domain="$DOMAIN-btc-indexer"
-btc_indexer_domain="$DOMAIN-eth-indexer"
-domains="($domain $btc_indexer_domain $eth_indexer_domain)"
+mydomain=$DOMAIN
+domains="($mydomain btc-indexer-$mydomain eth-indexer-$mydomain)"
 
 port=$PORT
 rsa_key_size=4096
@@ -17,9 +15,14 @@ nginx_config_path="./data/nginx"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
-cp "$nginx_config_path/app.template.conf" "$nginx_config_path/app.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app.conf"
-sed -i "s/_PORT_/$port/g" "$nginx_config_path/app.conf"
+mkdir -p "$nginx_config_path/sites-available"
+mkdir -p "$nginx_config_path/sites-enabled"
+for domain in "${domains[@]}"; do
+  cp "$nginx_config_path/app.template.conf" "$nginx_config_path/sites-available/$domain.conf"
+  sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/sites-available/$domain.conf"
+  sed -i "s/_PORT_/$port/g" "$nginx_config_path/sites-available/$domain.conf"
+  ln -s $domain.conf $nginx_config_path/sites-available/$domain.conf
+done
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
