@@ -6,10 +6,11 @@ if ! [ -x "$(command -v docker-compose)" ]; then
 fi
 
 mydomain=$DOMAIN
-domains=($mydomain btc-indexer-$mydomain eth-indexer-$mydomain)
+btc_indexer="btc-indexer-$mydomain"
+eth_indexer="eth-indexer-$mydomain"
+domains=($mydomain $btc_indexer $eth_indexer)
 
 http_port=$PORT
-ws_port=$WS_PORT
 rsa_key_size=4096
 data_path="./data/certbot"
 nginx_config_path="./data/nginx"
@@ -17,18 +18,17 @@ email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
 mkdir -p "$nginx_config_path/app"
+cp "$nginx_config_path/http.conf" "$nginx_config_path/app/$mydomain.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$mydomain.conf"
+sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/$mydomain.conf"
 
-cp "$nginx_config_path/http.conf" "$nginx_config_path/app/${domains[0]}.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/${domains[0]}.conf"
-sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/${domains[0]}.conf"
+cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$btc_indexer.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$btc_indexer.conf"
+sed -i "s/_WS_PORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
 
-cp "$nginx_config_path/http.conf" "$nginx_config_path/app/${domains[1]}.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/${domains[1]}.conf"
-sed -i "s/_WS_PORT_/$ws_port/g" "$nginx_config_path/app/${domains[1]}.conf"
-
-cp "$nginx_config_path/http.conf" "$nginx_config_path/app/${domains[2]}.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/${domains[2]}.conf"
-sed -i "s/_WS_PORT_/$ws_port/g" "$nginx_config_path/app/${domains[2]}.conf"
+cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$eth_indexer.conf"
+sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$eth_indexer.conf"
+sed -i "s/_WS_PORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
