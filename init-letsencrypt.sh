@@ -19,15 +19,15 @@ staging=0    # Set to 1 if you're testing your setup to avoid hitting request li
 
 mkdir -p "$nginx_config_path/app"
 cp "$nginx_config_path/http.conf" "$nginx_config_path/app/$mydomain.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$mydomain.conf"
+sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$mydomain.conf"
 sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/$mydomain.conf"
 
 cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$btc_indexer.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$btc_indexer.conf"
+sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$btc_indexer.conf"
 sed -i "s/_WS_PORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
 
 cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$eth_indexer.conf"
-sed -i "s/_DOMAIN_/$domain/g" "$nginx_config_path/app/$eth_indexer.conf"
+sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$eth_indexer.conf"
 sed -i "s/_WS_PORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
 
 if [ -d "$data_path" ]; then
