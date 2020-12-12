@@ -17,6 +17,7 @@ nginx_config_path="./data/nginx"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
+rm -rf "$nginx_config_path/app"
 mkdir -p "$nginx_config_path/app"
 cp "$nginx_config_path/http.conf" "$nginx_config_path/app/$mydomain.conf"
 sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$mydomain.conf"
