@@ -16,7 +16,7 @@ data_path=$DIR
 
 nginx_mount_path="$data_path/nginx"
 certbot_mount_path="$data_path/certbot"
-mkdir -p nginx_mount_path
+mkdir -p $nginx_mount_path
 
 cp "$nginx_template_path/http.conf" "$nginx_mount_path/$mydomain.conf"
 sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_mount_path/$mydomain.conf"
