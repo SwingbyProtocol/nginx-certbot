@@ -40,10 +40,12 @@ if [ $withIndexer == 'true' ]; then
   sed -i "s/_WSPORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
 fi
 
-if [ -e "$certbot_mount_path/conf/live/$domain/cert.pem" ]; then
-  echo "Existing data found for $domains. Process is skipped..."
-  exit 0
-fi
+for domain in "${domains[@]}"; do
+  if [ -e "$certbot_mount_path/conf/live/$domain/cert.pem" ]; then
+    echo "Existing data found for $domain. Process is skipped..."
+    exit 0
+  fi
+done
 
 if [ ! -e "$certbot_mount_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$certbot_mount_path/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
