@@ -20,7 +20,7 @@ application.
 
 4. Run the init script:
 
-        DOMAIN="<your domain>" PORT=<your server port> ./init-letsencrypt.sh
+        DOMAIN="<your domain>" PORT=<your server port> WITH_IDNEXER=true ./init-letsencrypt.sh
 
 5. Run the server:
 

@@ -8,30 +8,36 @@ fi
 mydomain=$DOMAIN
 btc_indexer="btc-indexer-$mydomain"
 eth_indexer="eth-indexer-$mydomain"
-domains=($mydomain $btc_indexer $eth_indexer)
-
+domains=($mydomain)
 http_port=$PORT
+
+rm -rf "$nginx_config_path/app"
+mkdir -p "$nginx_config_path/app"
+
+cp "$nginx_config_path/http.conf" "$nginx_config_path/app/$mydomain.conf"
+sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$mydomain.conf"
+sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/$mydomain.conf"
+
+withIndexer=$WITH_IDNEXER
+if [ withIndexer ]; then
+  domains=($mydomain $btc_indexer $eth_indexer)
+  cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$btc_indexer.conf"
+  sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_config_path/app/$btc_indexer.conf"
+  sed -i "s/_PORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
+  sed -i "s/_WSPORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
+
+  cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$eth_indexer.conf"
+  sed -i "s/_DOMAIN_/$eth_indexer/g" "$nginx_config_path/app/$eth_indexer.conf"
+  sed -i "s/_PORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
+  sed -i "s/_WSPORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
+fi
+
 rsa_key_size=4096
 data_path="./data/certbot"
 nginx_config_path="./data/nginx"
 email=$EMAIL # Adding a valid address is strongly recommended
 staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
 
-rm -rf "$nginx_config_path/app"
-mkdir -p "$nginx_config_path/app"
-cp "$nginx_config_path/http.conf" "$nginx_config_path/app/$mydomain.conf"
-sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$mydomain.conf"
-sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/$mydomain.conf"
-
-cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$btc_indexer.conf"
-sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_config_path/app/$btc_indexer.conf"
-sed -i "s/_PORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
-sed -i "s/_WSPORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
-
-cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$eth_indexer.conf"
-sed -i "s/_DOMAIN_/$eth_indexer/g" "$nginx_config_path/app/$eth_indexer.conf"
-sed -i "s/_PORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
-sed -i "s/_WSPORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
