@@ -5,47 +5,47 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-mydomain=$DOMAIN
-btc_indexer="btc-indexer-$mydomain"
-eth_indexer="eth-indexer-$mydomain"
-domains=($mydomain)
-http_port=$PORT
-
 rsa_key_size=4096
-data_path="./data/certbot"
-nginx_config_path="./data/nginx"
+nginx_template_path="./nginx"
+staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
+
+mydomain=$DOMAIN
 email=$EMAIL # Adding a valid address is strongly recommended
-staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
+http_port=$PORT
+data_path=$DIR
 
-rm -rf "$nginx_config_path/app"
-mkdir -p "$nginx_config_path/app"
+nginx_mount_path="$data_path/nginx"
+certbot_mount_path="$data_path/certbot"
+mkdir -p nginx_mount_path
 
-cp "$nginx_config_path/http.conf" "$nginx_config_path/app/$mydomain.conf"
-sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$mydomain.conf"
-sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/$mydomain.conf"
+cp "$nginx_template_path/http.conf" "$nginx_mount_path/$mydomain.conf"
+sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_mount_path/$mydomain.conf"
+sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
+
+domains=($mydomain)
 
 withIndexer=$WITH_IDNEXER
 if [ withIndexer == 'true' ]; then
+  btc_indexer="btc-indexer-$mydomain"
+  eth_indexer="eth-indexer-$mydomain"
   domains=($mydomain $btc_indexer $eth_indexer)
-  cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$btc_indexer.conf"
-  sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_config_path/app/$btc_indexer.conf"
-  sed -i "s/_PORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
-  sed -i "s/_WSPORT_/9130/g" "$nginx_config_path/app/$btc_indexer.conf"
+  cp "$nginx_template_path/http_ws.conf" "$nginx_mount_path/$btc_indexer.conf"
+  sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_mount_path/$btc_indexer.conf"
+  sed -i "s/_PORT_/9130/g" "$nginx_mount_path/$btc_indexer.conf"
+  sed -i "s/_WSPORT_/9130/g" "$nginx_mount_path/$btc_indexer.conf"
 
-  cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$eth_indexer.conf"
-  sed -i "s/_DOMAIN_/$eth_indexer/g" "$nginx_config_path/app/$eth_indexer.conf"
-  sed -i "s/_PORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
-  sed -i "s/_WSPORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
+  cp "$nginx_template_path/http_ws.conf" "$nginx_mount_path/$eth_indexer.conf"
+  sed -i "s/_DOMAIN_/$eth_indexer/g" "$nginx_mount_path/$eth_indexer.conf"
+  sed -i "s/_PORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
+  sed -i "s/_WSPORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
 fi
 
-if [ -d "$data_path" ]; then
-  read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
-  if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
-    exit
-  fi
+if [ -d "$certbot_mount_path/conf/live/$domain" ]; then
+  echo "Existing data found for $domains. Process is skip..."
+  exit 0
 fi
 
-if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
+if [ ! -e "$certbot_mount_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$certbot_mount_path/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
   mkdir -p "$data_path/conf"
   curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf >"$data_path/conf/options-ssl-nginx.conf"
@@ -57,7 +57,7 @@ for domain in "${domains[@]}"; do
   echo "### Creating dummy certificate for $domain ..."
   path="/etc/letsencrypt/live/$domain"
   mkdir -p "$data_path/conf/live/$domain"
-  docker-compose run --rm --entrypoint "\
+  DIR=$data_path docker-compose run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1\
     -keyout '$path/privkey.pem' \
     -out '$path/fullchain.pem' \
@@ -71,7 +71,7 @@ echo
 
 for domain in "${domains[@]}"; do
   echo "### Deleting dummy certificate for $domain ..."
-  docker-compose run --rm --entrypoint "\
+  DIR=$data_path docker-compose run --rm --entrypoint "\
   rm -Rf /etc/letsencrypt/live/$domain && \
   rm -Rf /etc/letsencrypt/archive/$domain && \
   rm -Rf /etc/letsencrypt/renewal/$domain.conf" certbot

@@ -5,9 +5,9 @@ services:
     image: nginx:1.15-alpine
     restart: unless-stopped
     volumes:
-      - ./data/nginx/app:/etc/nginx/conf.d
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
+      - ${DIR}/nginx:/etc/nginx/conf.d
+      - ${DIR}/certbot/conf:/etc/letsencrypt
+      - ${DIR}/certbot/www:/var/www/certbot
     ports:
       - "80:80"
       - "443:443"
@@ -16,6 +16,6 @@ services:
     image: certbot/certbot
     restart: unless-stopped
     volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
+      - ${DIR}/certbot/conf:/etc/letsencrypt
+      - ${DIR}/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

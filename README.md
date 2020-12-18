@@ -20,11 +20,11 @@ application.
 
 4. Run the init script:
 
-        DOMAIN="<your domain>" PORT=<your server port> WITH_IDNEXER=true ./init-letsencrypt.sh
+        DIR="./data" DOMAIN="<your domain>" PORT=<your server port> WITH_IDNEXER=true ./init-letsencrypt.sh
 
 5. Run the server:
 
-        docker-compose up
+        DIR="./data" docker-compose up -d
 
 ## Got questions?
 Feel free to post questions in the comment section of the [accompanying guide](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
