@@ -25,7 +25,7 @@ sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_config_path/app/$mydomain.conf"
 sed -i "s/_PORT_/$http_port/g" "$nginx_config_path/app/$mydomain.conf"
 
 withIndexer=$WITH_IDNEXER
-if [ withIndexer ]; then
+if [ withIndexer == 'true' ]; then
   domains=($mydomain $btc_indexer $eth_indexer)
   cp "$nginx_config_path/http_ws.conf" "$nginx_config_path/app/$btc_indexer.conf"
   sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_config_path/app/$btc_indexer.conf"
