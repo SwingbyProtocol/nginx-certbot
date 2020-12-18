@@ -40,7 +40,7 @@ if [ $withIndexer == 'true' ]; then
   sed -i "s/_WSPORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
 fi
 
-if [ -d "$certbot_mount_path/conf/live/$domain/privkey.pem" ]; then
+if [ "$certbot_mount_path/conf/live/$domain/cert.pem" ]; then
   echo "Existing data found for $domains. Process is skipped..."
   exit 0
 fi
