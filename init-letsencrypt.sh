@@ -11,6 +11,12 @@ eth_indexer="eth-indexer-$mydomain"
 domains=($mydomain)
 http_port=$PORT
 
+rsa_key_size=4096
+data_path="./data/certbot"
+nginx_config_path="./data/nginx"
+email=$EMAIL # Adding a valid address is strongly recommended
+staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
+
 rm -rf "$nginx_config_path/app"
 mkdir -p "$nginx_config_path/app"
 
@@ -31,13 +37,6 @@ if [ withIndexer ]; then
   sed -i "s/_PORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
   sed -i "s/_WSPORT_/9131/g" "$nginx_config_path/app/$eth_indexer.conf"
 fi
-
-rsa_key_size=4096
-data_path="./data/certbot"
-nginx_config_path="./data/nginx"
-email=$EMAIL # Adding a valid address is strongly recommended
-staging=0    # Set to 1 if you're testing your setup to avoid hitting request limits
-
 
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
