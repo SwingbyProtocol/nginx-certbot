@@ -13,6 +13,7 @@ mydomain=$DOMAIN
 email=$EMAIL # Adding a valid address is strongly recommended
 http_port=$PORT
 data_path=$DIR
+withIndexer=$WITH_IDNEXERS
 
 nginx_mount_path="$data_path/nginx"
 certbot_mount_path="$data_path/certbot"
@@ -24,7 +25,6 @@ sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
 
 domains=($mydomain)
 
-withIndexer=$WITH_IDNEXER
 if [ withIndexer == 'true' ]; then
   btc_indexer="btc-indexer-$mydomain"
   eth_indexer="eth-indexer-$mydomain"
