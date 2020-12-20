@@ -20,7 +20,7 @@ application.
 
 4. Run the init script:
 
-        DIR="./data" DOMAIN="<your domain>" PORT=<your server port> WITH_IDNEXERS=true ./init-letsencrypt.sh
+        DIR="./data" DOMAIN="<your domain>" PORT=<your server port> WITH_IDNEXERS=true EMAIL=<your email> ./init-letsencrypt.sh
 
 5. Run the server:
 
