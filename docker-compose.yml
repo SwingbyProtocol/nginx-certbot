@@ -18,6 +18,9 @@ services:
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
     environment:
       DIR: "{{ DIR }}"
+    networks:
+      nginx-cert:
+        ipv4_address: 10.3.0.101
 
   certbot:
     image: certbot/certbot
@@ -32,3 +35,14 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     environment:
       DIR: "{{ DIR }}"
+    networks:
+      nginx-cert:
+        ipv4_address: 10.3.0.102
+
+networks:
+  nginx-cert:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.3.0.0/24
