@@ -2,6 +2,7 @@ version: "3"
 
 services:
   nginx:
+    container_name: nginx_https_ws
     image: nginx:1.15-alpine
     restart: unless-stopped
     logging:
@@ -23,6 +24,7 @@ services:
         ipv4_address: 10.3.0.101
 
   certbot:
+    container_name: certbot
     image: certbot/certbot
     restart: unless-stopped
     logging:
