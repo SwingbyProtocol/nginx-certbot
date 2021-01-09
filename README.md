@@ -3,31 +3,21 @@
 > This repository is accompanied by a [step-by-step guide on how to
 set up nginx and Let’s Encrypt with Docker](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71).
 
-`init-letsencrypt.sh` fetches and ensures the renewal of a Let’s
-Encrypt certificate for one or multiple domains in a docker-compose
-setup with nginx.
-This is useful when you need to set up nginx as a reverse proxy for an
-application.
 
-## Installation
-1. [Install docker-compose](https://docs.docker.com/compose/install/#install-compose).
-
-2. Clone this repository: `git clone https://github.com/wmnnd/nginx-certbot.git .`
-
-3. Modify configuration:
-- Add domains and email addresses to init-letsencrypt.sh
-- Replace all occurrences of example.org with primary domain (the first one you added to init-letsencrypt.sh) in data/nginx/app.conf
-
-4. Run the init script:
-
-        DIR="./data" DOMAIN="<your domain>" PORT=<your server port> WITH_IDNEXERS=true EMAIL=<your email> ./init-letsencrypt.sh
-
+## Installation docker
+```
+$ chmod +x ./install_docker.sh && ./install_docker.sh
+```
+## Getting Started
+- 1. Setup Domain A record on your DNS service provider.
+- 2. Setup SSL certificate via Let's encrypt.
+```
+$ DIR="./data" DOMAIN={you_domain} PORT={app_port} WITH_IDNEXERS=true EMAIL={your_email} ./init-letsencrypt.sh
+```
 5. Run the server:
-
-        DIR="./data" docker-compose up -d
-
-## Got questions?
-Feel free to post questions in the comment section of the [accompanying guide](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
+```
+$ DIR="./data" docker-compose up -d
+```
 
 ## License
 All code in this repository is licensed under the terms of the `MIT License`. For further information please refer to the `LICENSE` file.
