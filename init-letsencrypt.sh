@@ -10,6 +10,7 @@ nginx_template_path="./nginx"
 staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
 mydomain=$DOMAIN
+forward=$FORWARD
 email=$EMAIL # Adding a valid address is strongly recommended
 http_port=$PORT
 data_path=$DIR
@@ -20,7 +21,7 @@ certbot_mount_path="$data_path/certbot"
 mkdir -p $nginx_mount_path
 
 cp "$nginx_template_path/http.conf" "$nginx_mount_path/$mydomain.conf"
-sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_mount_path/$mydomain.conf"
+sed -i "s/_FORWARD_/$forward/g" "$nginx_mount_path/$mydomain.conf"
 sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
 
 domains=($mydomain)
