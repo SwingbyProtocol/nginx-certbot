@@ -27,9 +27,15 @@ sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
 
 domains=($mydomain)
 
+btc_indexer="btc-indexer-$mydomain"
+eth_indexer="eth-indexer-$mydomain"
+
+if [[ "$withIndexer" == "false" ]]; then
+  rm -f "$nginx_mount_path/$btc_indexer.conf"
+  rm -f "$nginx_mount_path/$eth_indexer.conf"
+fi
+
 if [[ "$withIndexer" == "true" ]]; then
-  btc_indexer="btc-indexer-$mydomain"
-  eth_indexer="eth-indexer-$mydomain"
   domains=($mydomain $btc_indexer $eth_indexer)
   cp "$nginx_template_path/indexer.conf" "$nginx_mount_path/$btc_indexer.conf"
   sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_mount_path/$btc_indexer.conf"
@@ -41,6 +47,8 @@ if [[ "$withIndexer" == "true" ]]; then
   sed -i "s/_FORWARD_/10.2.0.1/g" "$nginx_mount_path/$eth_indexer.conf"
   sed -i "s/_PORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
 fi
+
+
 
 for domain in "${domains[@]}"; do
   if [ -e "$certbot_mount_path/conf/live/$domain/cert.pem" ]; then
