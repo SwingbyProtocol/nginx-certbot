@@ -31,15 +31,15 @@ if [[ "$withIndexer" == "true" ]]; then
   btc_indexer="btc-indexer-$mydomain"
   eth_indexer="eth-indexer-$mydomain"
   domains=($mydomain $btc_indexer $eth_indexer)
-  cp "$nginx_template_path/http_ws.conf" "$nginx_mount_path/$btc_indexer.conf"
+  cp "$nginx_template_path/indexer.conf" "$nginx_mount_path/$btc_indexer.conf"
   sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_mount_path/$btc_indexer.conf"
+  sed -i "s/_FORWARD_/10.2.0.1/g" "$nginx_mount_path/$btc_indexer.conf"
   sed -i "s/_PORT_/9130/g" "$nginx_mount_path/$btc_indexer.conf"
-  sed -i "s/_WSPORT_/9130/g" "$nginx_mount_path/$btc_indexer.conf"
 
   cp "$nginx_template_path/http_ws.conf" "$nginx_mount_path/$eth_indexer.conf"
   sed -i "s/_DOMAIN_/$eth_indexer/g" "$nginx_mount_path/$eth_indexer.conf"
+  sed -i "s/_FORWARD_/10.2.0.1/g" "$nginx_mount_path/$eth_indexer.conf"
   sed -i "s/_PORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
-  sed -i "s/_WSPORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
 fi
 
 for domain in "${domains[@]}"; do
