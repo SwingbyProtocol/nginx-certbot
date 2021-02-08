@@ -25,10 +25,10 @@ sed -i "s/_DOMAIN_/$mydomain/g" "$nginx_mount_path/$mydomain.conf"
 sed -i "s/_FORWARD_/$forward/g" "$nginx_mount_path/$mydomain.conf"
 sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
 
-domains=($mydomain)
-
 btc_indexer="btc-indexer-$mydomain"
 eth_indexer="eth-indexer-$mydomain"
+
+domains=($mydomain $btc_indexer $eth_indexer)
 
 if [[ "$withIndexer" == "false" ]]; then
   rm -f "$nginx_mount_path/$btc_indexer.conf"
@@ -36,7 +36,6 @@ if [[ "$withIndexer" == "false" ]]; then
 fi
 
 if [[ "$withIndexer" == "true" ]]; then
-  domains=($mydomain $btc_indexer $eth_indexer)
   cp "$nginx_template_path/indexer.conf" "$nginx_mount_path/$btc_indexer.conf"
   sed -i "s/_DOMAIN_/$btc_indexer/g" "$nginx_mount_path/$btc_indexer.conf"
   sed -i "s/_FORWARD_/10.2.0.1/g" "$nginx_mount_path/$btc_indexer.conf"
@@ -48,12 +47,12 @@ if [[ "$withIndexer" == "true" ]]; then
   sed -i "s/_PORT_/9131/g" "$nginx_mount_path/$eth_indexer.conf"
 fi
 
-
-
+apply_domains=()
 for domain in "${domains[@]}"; do
-  if [ -e "$certbot_mount_path/conf/live/$domain/cert.pem" ]; then
+  if ! [ -e "$certbot_mount_path/conf/live/$domain/cert.pem" ]; then
+    apply_domains+=("$domain")
+  else
     echo "Existing data found for $domain. Process is skipped..."
-    exit 0
   fi
 done
 
@@ -65,7 +64,7 @@ if [ ! -e "$certbot_mount_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$certbo
   echo
 fi
 
-for domain in "${domains[@]}"; do
+for domain in "${apply_domains[@]}"; do
   echo "### Creating dummy certificate for $domain ..."
   path="/etc/letsencrypt/live/$domain"
   mkdir -p "$certbot_mount_path/conf/live/$domain"
@@ -81,7 +80,7 @@ echo "### Starting nginx ..."
 docker-compose up --force-recreate -d nginx
 echo
 
-for domain in "${domains[@]}"; do
+for domain in "${apply_domains[@]}"; do
   echo "### Deleting dummy certificate for $domain ..."
   DIR=$data_path docker-compose run --rm --entrypoint "\
   rm -Rf /etc/letsencrypt/live/$domain && \
@@ -90,10 +89,10 @@ for domain in "${domains[@]}"; do
   echo
 done
 
-echo "### Requesting Let's Encrypt certificate for $domains ..."
+echo "### Requesting Let's Encrypt certificate for $apply_domains ..."
 #Join $domains to -d args
 domain_args=""
-for domain in "${domains[@]}"; do
+for domain in "${apply_domains[@]}"; do
   domain_args="$domain_args -d $domain"
 done
 
@@ -106,7 +105,7 @@ esac
 # Enable staging mode if needed
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
-for domain in "${domains[@]}"; do
+for domain in "${apply_domains[@]}"; do
   docker-compose run --rm --entrypoint "\
   certbot certonly --webroot -w /var/www/certbot \
     $staging_arg \
