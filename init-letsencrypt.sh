@@ -18,6 +18,7 @@ withIndexer=$WITH_IDNEXERS
 
 nginx_mount_path="$data_path/nginx"
 certbot_mount_path="$data_path/certbot"
+rm -rf "$nginx_mount_path"
 mkdir -p $nginx_mount_path
 
 cp "$nginx_template_path/http.conf" "$nginx_mount_path/$mydomain.conf"
@@ -27,8 +28,6 @@ sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
 
 btc_indexer="btc-indexer-$mydomain"
 eth_indexer="eth-indexer-$mydomain"
-
-rm -f "$nginx_mount_path/*"
 
 domains=($mydomain $btc_indexer $eth_indexer)
 
