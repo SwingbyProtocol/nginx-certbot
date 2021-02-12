@@ -28,6 +28,8 @@ sed -i "s/_PORT_/$http_port/g" "$nginx_mount_path/$mydomain.conf"
 btc_indexer="btc-indexer-$mydomain"
 eth_indexer="eth-indexer-$mydomain"
 
+rm -f "$nginx_mount_path/*"
+
 domains=($mydomain $btc_indexer $eth_indexer)
 
 if [[ "$withIndexer" == "true" ]]; then
@@ -44,8 +46,6 @@ fi
 
 if [[ "$withIndexer" == "false" ]]; then
   domains=($mydomain)
-  rm -f "$nginx_mount_path/$btc_indexer.conf"
-  rm -f "$nginx_mount_path/$eth_indexer.conf"
 fi
 
 apply_domains=()

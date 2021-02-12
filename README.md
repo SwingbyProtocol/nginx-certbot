@@ -12,13 +12,8 @@ $ chmod +x ./install_docker.sh && ./install_docker.sh
 - 1. Setup Domain A record on your DNS service provider.
 - 2. Setup SSL certificate via Let's encrypt.
 ```sh
-$ DIR="./data" \
-  DOMAIN={you_domain} \
-  FORWARD=172.17.0.1 \
-  PORT={app_port} \
-  WITH_IDNEXERS=true \
-  EMAIL={your_email} \
-  ./init-letsencrypt.sh
+$ export DIR="./data" DOMAIN=s1.example.com FORWARD=172.17.0.1 PORT=8067 WITH_IDNEXERS=true EMAIL=admin@example.com
+$ ./init-letsencrypt.sh
 ```
 - 3. Run the server:
 ```
