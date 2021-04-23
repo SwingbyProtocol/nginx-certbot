@@ -20,8 +20,8 @@ services:
     environment:
       DIR: "{{ DIR }}"
     networks:
-      nginx-cert:
-        ipv4_address: 10.3.0.101
+      infura:
+        ipv4_address: 10.2.0.201
 
   certbot:
     container_name: certbot
@@ -38,13 +38,10 @@ services:
     environment:
       DIR: "{{ DIR }}"
     networks:
-      nginx-cert:
-        ipv4_address: 10.3.0.102
+      infura:
+        ipv4_address: 10.2.0.202
 
 networks:
-  nginx-cert:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.3.0.0/24
+  infura:
+    external:
+      name: infura
